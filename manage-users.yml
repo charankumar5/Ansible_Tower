@@ -12,7 +12,7 @@
         append: yes
         state: present
       with_items:
-        - { username: 'komar', first_name: 'Kais', last_name: 'Omar', password: 'komar_password', groups: 'sudo' }
+        - { username: 'komar', first_name: 'Kais', last_name: 'Omar', password: 'Admin', groups: 'sudo' }
         - { username: 'arun', first_name: 'Arun', last_name: 'Krishna', password: 'arun_password', groups: 'users' }
         - { username: 'pmane', first_name: 'pratik', last_name: 'mane', password: 'pmane_password', groups: 'sudo' }
         - { username: 'sai', first_name: 'sai', last_name: 'nishanth', password: 'sai_password', groups: 'audit' }
