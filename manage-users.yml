@@ -1,0 +1,25 @@
+---
+- name: User management playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure users are present
+      ansible.builtin.user:
+        name: "{{ item.username }}"
+        comment: "{{ item.first_name }} {{ item.last_name }}"
+        password: "{{ item.password | password_hash('sha512') }}"
+        groups: "{{ item.groups }}"
+        append: yes
+        state: present
+      with_items:
+        - { username: 'komar', first_name: 'Kais', last_name: 'Omar', password: 'komar_password', groups: 'sudo' }
+        - { username: 'arun', first_name: 'Arun', last_name: 'Krishna', password: 'arun_password', groups: 'users' }
+        - { username: 'pmane', first_name: 'pratik', last_name: 'mane', password: 'pmane_password', groups: 'sudo' }
+        - { username: 'sai', first_name: 'sai', last_name: 'nishanth', password: 'sai_password', groups: 'audit' }
+
+    # The following task is an example of removing a user
+    - name: Ensure a user is removed
+      ansible.builtin.user:
+        name: "unnecessary_user"
+        state: absent
+      when: inventory_hostname in groups['group_to_remove_user']
