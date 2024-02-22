@@ -29,8 +29,8 @@
         - { username: 'sai', first_name: 'sai', last_name: 'nishanth', password: 'Admin', groups: 'audit' }
 
     # The following task is an example of removing a user
-    - name: Ensure a user is removed
-      ansible.builtin.user:
-        name: "unnecessary_user"
-        state: absent
-      when: inventory_hostname in groups['group_to_remove_user']
+   # - name: Ensure a user is removed
+   #   ansible.builtin.user:
+   #     name: "unnecessary_user"
+   #     state: absent
+   #   when: inventory_hostname in groups['group_to_remove_user']
