@@ -13,7 +13,7 @@
         - 'sudo'
         - 'users'
         - 'audit'
-        
+
     - name: Ensure users are present
       ansible.builtin.user:
         name: "{{ item.username }}"

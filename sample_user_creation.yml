@@ -1,0 +1,14 @@
+---
+- name: Create a single user with a password
+  hosts: all
+  become: yes
+  vars:
+    username: 'newuser'
+    password: 'securepassword123'  # You should encrypt this with Ansible Vault in production
+
+  tasks:
+    - name: Create user with password
+      ansible.builtin.user:
+        name: "{{ username }}"
+        password: "{{ password | password_hash('sha512') }}"
+        state: present
