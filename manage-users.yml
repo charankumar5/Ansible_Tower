@@ -2,6 +2,8 @@
 - name: User management playbook
   hosts: all
   become: yes
+  vars:
+    ansible_become_password: "{{ sudo_password }}"
   tasks:
     - name: Ensure users are present
       ansible.builtin.user:
@@ -11,7 +13,7 @@
         groups: "{{ item.groups }}"
         append: yes
         state: present
-      with_items:
+      loop:
         - { username: 'komar', first_name: 'Kais', last_name: 'Omar', password: 'Admin', groups: 'sudo' }
         - { username: 'arun', first_name: 'Arun', last_name: 'Krishna', password: 'Admin', groups: 'users' }
         - { username: 'pmane', first_name: 'pratik', last_name: 'mane', password: 'Admin', groups: 'sudo' }
