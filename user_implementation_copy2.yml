@@ -1,0 +1,125 @@
+---
+- name: Create users and assign roles
+  hosts: all
+  become: yes
+  vars:
+    ssh_private_key: "/root/.ssh/rbac_local"
+    user_password: livello
+    ansible_user: pi # Specify the desired user here
+    super_admins:
+      - Shriom Tripathi
+      - Shayan Zeinali
+      - Marcus Bauer
+      - Mohamed Jridi
+      - Pratik Mane
+      - Sai Nishanth Adingi
+      - Kais Omar
+
+    admins:
+      - Timur Sabet
+      - Thirunilavan Thavapalan
+      - Arul Prasath Ramu
+
+    users:
+      - Arun Krishna
+      - Mohamed Amine Rezgui
+      - Muhammad Saeed
+      - Amira Fekih Said
+      - Wajdi Boumaiza
+      - Abdel Razzaq Al Kissawani
+      - Diego Alvarez
+      - Fawzi Erekat
+      - Mostafa Mohajeri Nejad
+      - Saifali Satkhed
+      - Tim Hemmerich
+      - Ankita Kathuria
+      - Gregor Hasert
+      - Masroor Iqbal
+      - Nisha Rani
+      - Charan Poreddy
+
+  tasks:
+    - name: Ensure super_admin group exists
+      group:
+        name: super_admin
+        state: present
+
+    - name: Ensure admin group exists
+      group:
+        name: admin
+        state: present
+
+    - name: Ensure user group exists
+      group:
+        name: user
+        state: present
+
+    - name: Create super admin users
+      user:
+        name: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        groups: super_admin
+        password: "{{ user_password | password_hash('sha512') }}"
+      with_items: "{{ super_admins }}"
+
+    - name: Create admin users
+      user:
+        name: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        groups: admin
+        password: "{{ user_password | password_hash('sha512') }}"
+      with_items: "{{ admins }}"
+
+    - name: Create regular users
+      user:
+        name: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        groups: user
+        password: "{{ user_password | password_hash('sha512') }}"
+      with_items: "{{ users }}"
+
+    - name: Configure super admin SSH keys
+      authorized_key:
+        user: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        key: "{{ lookup('file', '/root/.ssh/rbac_local.pub')}}"
+        path: "{{ item_home | lower | replace(' ', '_') }}/.ssh/authorized_keys"
+      with_items: "{{ super_admins }}"
+      vars:
+        item_home: "/home/{{ item | lower | replace(' ', '_') }}"
+
+    - name: Configure admin SSH keys
+      authorized_key:
+        user: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        key: "{{ lookup('file', '/root/.ssh/rbac_local.pub')}}"
+        path: "{{ item_home | lower | replace(' ', '_') }}/.ssh/authorized_keys"
+      with_items: "{{ admins }}"
+      vars:
+        item_home: "/home/{{ item | lower | replace(' ', '_') }}"
+
+    - name: Configure regular user SSH keys
+      authorized_key:
+        user: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        key: "{{ lookup('file', '/root/.ssh/rbac_local.pub')}}"
+        path: "{{ item_home | lower | replace(' ', '_') }}/.ssh/authorized_keys"
+      with_items: "{{ users }}"
+      vars:
+        item_home: "/home/{{ item | lower | replace(' ', '_') }}"
+
+    #- name: Grant sudo access to super admin users
+    #  lineinfile:
+    #    dest: "/etc/sudoers"
+    #    line: "{{ item }} ALL=(ALL) NOPASSWD: ALL"
+    #    validate: 'visudo -cf %s'
+    #  with_items: "{{ super_admins }}"
+
+    - name: Grant sudo access to super admin users
+      blockinfile:
+        path: "/etc/sudoers"
+        block: |
+          {% for user in super_admins %}
+          {{ user }} ALL=(ALL) NOPASSWD: ALL
+          {% endfor %}
+      validate: 'visudo -cf %s'
