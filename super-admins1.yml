@@ -1,0 +1,68 @@
+- name: Create users and assign roles
+  hosts: all
+  become: yes
+  vars:
+    ssh_private_key: "/home/rbac/.ssh/rbac_key"
+    user_password: livello
+    ansible_user: pi # Specify the desired user here
+    super_admins:
+      - Shriom Tripathi
+      - Shayan Zeinali
+      - Marcus Bauer
+      - Mohamed Jridi
+      - Pratik Mane
+      - Sai Nishanth Adingi
+      - Kais Omar
+    super_admin_group: super_admin
+
+  tasks:
+    - name: Ensure super_admin group exists
+      group:
+        name: "{{ super_admin_group }}"
+        state: present
+
+    - name: Create super admin users
+      user:
+        name: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        groups: "{{ super_admin_group }}"
+        password: "{{ user_password | password_hash('sha512') }}"
+      with_items: "{{ super_admins }}"
+
+    - name: Add super admin users to sudo group
+      user:
+        name: "{{ item | lower | replace(' ', '_') }}"
+        groups: sudo
+        append: yes
+      with_items: "{{ super_admins }}"
+
+    - name: Ensure super admin users have rwx access to all folders
+      file:
+        path: "/home/{{ item | lower | replace(' ', '_') }}"
+        state: directory
+        owner: "{{ item | lower | replace(' ', '_') }}"
+        group: "{{ item | lower | replace(' ', '_') }}"
+        mode: '0700'  # Full rwx access for the user
+      with_items: "{{ super_admins }}"
+
+    - name: Configure super admin SSH keys
+      authorized_key:
+        user: "{{ item | lower | replace(' ', '_') }}"
+        state: present
+        key: "{{ lookup('file', '/home/rbac/.ssh/rbac_key.pub')}}"
+        path: "/home/{{ item | lower | replace(' ', '_') }}/.ssh/authorized_keys"
+      with_items: "{{ super_admins }}"
+
+    - name: Configure shell prompt for super admin users
+      lineinfile:
+        path: "/home/{{ item | lower | replace(' ', '_') }}/.bashrc"
+        line: 'PS1='\''\[\033[01;32m\]{{ item | lower | replace(' ', '_') }}@{{ ansible_hostname }}:\[\033[01;34m\]\w\$\[\033[00m\] '\''
+      with_items: "{{ super_admins }}"
+      notify: Reload Shell
+
+  handlers:
+    - name: Reload Shell
+      command: "su - {{ item | lower | replace(' ', '_') }} -c 'source ~/.bashrc'"
+      with_items: "{{ super_admins }}"
+      become: yes
+      become_user: root
