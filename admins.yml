@@ -6,13 +6,13 @@
     user_password: livello
     ansible_user: pi # Specify the desired user here
     super_admins:
-      - Shriom Tripathi
-      - Shayan Zeinali
-      - Marcus Bauer
-      - Mohamed Jridi
-      - Pratik Mane
-      - Sai Nishanth Adingi
-      - Kais Omar
+      - "Shriom Tripathi"
+      - "Shayan Zeinali"
+      - "Marcus Bauer"
+      - "Mohamed Jridi"
+      - "Pratik Mane"
+      - "Sai Nishanth Adingi"
+      - "Kais Omar"
     super_admin_group: super_admin
 
   tasks:
@@ -22,7 +22,7 @@
         state: present
 
     - name: Create super admin users
-      user:
+      ansible.builtin.user:
         name: "{{ item | lower | replace(' ', '_') }}"
         state: present
         groups: "{{ super_admin_group }}"
@@ -36,22 +36,26 @@
         groups: adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,input,render,netdev,gpio,spi,i2c
         append: yes
       with_items: "{{ super_admins }}"
-    - name: Create 2048-bit SSH key for all users separately
+
+    - name: Create 2048-bit SSH key for super admin users
       ansible.builtin.user:
-        name: Mohamed_jridi, Shriom Tripathi,Shayan Zeinali, Marcus Bauer, Pratik Mane, Sai Nishanth Adingi, Kais Omar
+        name: "{{ item | lower | replace(' ', '_') }}"
         generate_ssh_key: yes
         ssh_key_bits: 2048
-        ssh_key_file: .ssh/id_rsa_mohamed, .ssh/id_rsa_Shayan, .ssh/id_rsa_Marcus,.ssh/id_rsa_Pratik, .ssh/id_rsa_, .ssh/id_rsa_Sai, .ssh/id_rsa_Kais
-    - name: Set maximum expiration date for password for user 'ram19'
+        ssh_key_file: "/home/{{ item | lower | replace(' ', '_') }}/.ssh/id_rsa"
+      with_items: "{{ super_admins }}"
+
+    - name: Set maximum expiration date for password for super admin users
       ansible.builtin.user:
-        name: Mohamed_jridi, Shriom Tripathi,Shayan Zeinali, Marcus Bauer, Pratik Mane, Sai Nishanth Adingi, Kais Omar
+        name: "{{ item | lower | replace(' ', '_') }}"
         password_expire_max: 10
+      with_items: "{{ super_admins }}"
 
-    - name: Set number of warning days for password expiration for user 'jane157'
+    - name: Set number of warning days for password expiration for super admin users
       ansible.builtin.user:
-        name: Mohamed_jridi, Shriom Tripathi,Shayan Zeinali, Marcus Bauer, Pratik Mane, Sai Nishanth Adingi, Kais Omar
+        name: "{{ item | lower | replace(' ', '_') }}"
         password_expire_warn: 30
-
+      with_items: "{{ super_admins }}"
 
     - name: Ensure super admin users have rwx access to all folders
       file:
@@ -76,7 +80,6 @@
         line: |
           PS1='\[\033[01;32m\]{{ item | lower | replace(' ', '_') }}@{{ ansible_hostname }}:\[\033[01;34m\]\w\$\[\033[00m\] '
       with_items: "{{ super_admins }}"
-
 
   handlers:
     - name: Reload Shell
