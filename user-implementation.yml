@@ -1,0 +1,23 @@
+---
+- name: Create user and add SSH key
+  hosts: all
+  become: yes
+  vars:
+    new_user: livello
+    ssh_private_key: "/root/.ssh/rbac_local"
+    user_password: livello
+    ansible_user: pi # Specify the desired user here
+    #user_password: livello
+  tasks:
+    - name: Ensure user exists
+      user:
+        name: "{{ new_user }}"
+        state: present
+
+    - name: Add SSH key to authorized_keys
+      authorized_key:
+        user: "{{ new_user }}"
+        state: present
+        key: "{{ lookup('file', '/root/.ssh/rbac_local.pub')}}"
+      vars:
+        ansible_ssh_private_key_file: "{{ ssh_private_key }}"
