@@ -58,7 +58,6 @@
         path: "/home/{{ item | lower | replace(' ', '_') }}/.bashrc"
         line: 'PS1='\''\[\033[01;32m\]{{ item | lower | replace(' ', '_') }}@{{ ansible_hostname }}:\[\033[01;34m\]\w\$\[\033[00m\] '\''
       with_items: "{{ super_admins }}"
-      notify: Reload Shell
 
   handlers:
     - name: Reload Shell
