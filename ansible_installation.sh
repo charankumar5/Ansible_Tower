@@ -7,14 +7,14 @@ sudo apt update
 sudo apt upgrade --yes
 
 # Install pipx
-sudo apt install pipx --yes
+#sudo apt install pipx --yes
 
 # Install ansible using pipx
-pipx install --include-deps ansible 
+#pipx install --include-deps ansible 
 
 #add the global path automatically.
-pipx ensurepath
-
+#pipx ensurepath
+sudo apt install ansible
 #check ansible version
 ansible --version
 
