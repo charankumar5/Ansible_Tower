@@ -1,0 +1,5 @@
+[servers]
+192.168.178.32 ansible_user=pi
+34.29.145.143 ansible_user=rbac_key_local
+34.29.139.137 ansible_user=rbac_key_local
+34.31.179.107 ansible_user=rbac_key_local
